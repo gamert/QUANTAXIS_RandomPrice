@@ -45,8 +45,10 @@ time_index_future = pd.timedelta_range('21:00:00.500000', '23:00:00', freq='500m
 time_index_stock = pd.timedelta_range('09:30:00.500000', '11:30:00', freq='500ms').tolist() +\
     pd.timedelta_range('13:00:00.500000', '15:00:00', freq='500ms').tolist()
 
+# add by txz
+time_index_cryptocurrency = pd.timedelta_range('00:00:00', '23:59:59.500000', freq='500ms').tolist()
 
-def get_random_price(price, code='rb1905', tradingDay='20181119', mu=0, sigma=0.2, theta=0.15, dt=1e-2, ifprint=False, weight=0.1, market_type=None):
+def get_random_price(price, code='rb2106', tradingDay='20210202', mu=0, sigma=0.2, theta=0.15, dt=1e-2, ifprint=False, weight=0.1, market_type=None):
     ou_noise = OrnsteinUhlenbeckActionNoise(mu=np.array(mu))
 
     data = []
@@ -60,12 +62,19 @@ def get_random_price(price, code='rb1905', tradingDay='20181119', mu=0, sigma=0.
         'ActionDay': QA_util_date_str2int(QA_util_get_last_day(QA_util_date_int2str(tradingDay)))
     }
 
+    # 根据市场类型匹配
     if market_type is None:
-        market_type = MARKET_TYPE.FUTURE_CN if re.search(
+        # 'OKEX.1INCH-USDT'
+        if re.search(r'[a-zA-z]+\.[0-9a-zA-z]+\-[0-9a-zA-z]+', code):
+            market_type = MARKET_TYPE.CRYPTOCURRENCY
+        else:
+            market_type = MARKET_TYPE.FUTURE_CN if re.search(
             r'[a-zA-z]+', code) else MARKET_TYPE.STOCK_CN
 
     if market_type == MARKET_TYPE.FUTURE_CN:
         time_index = time_index_future
+    elif market_type == MARKET_TYPE.CRYPTOCURRENCY:
+        time_index = time_index_cryptocurrency
     else:
         time_index = time_index_stock
 
